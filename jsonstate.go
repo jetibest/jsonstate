@@ -71,13 +71,11 @@ func LevelString(level int) string {
 		
 		return "Fault"
 		
-	} else if level < 800 {
+	} else {
 		
 		return "Panic"
 		
 	}
-	
-	return "Unknown"
 }
 
 // apply override state object recursively, it will never introduce new states though, that would be confusing, because then something may become a tree, where it is not supposed to be as such
