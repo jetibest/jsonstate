@@ -1,7 +1,10 @@
 package jsonstate
 
-import "fmt"
-import "strings"
+import (
+	"fmt"
+	"strings"
+	"time"
+)
 
 const (
 	StateUnknown int = 0 // includes 'loading', 'not-applicable'
@@ -24,6 +27,7 @@ type State struct {
 	Level int          `json:"level"`
 	Source string      `json:"source,omitempty"`
 	Message string     `json:"message,omitempty"`
+	Datetime string    `json:"datetime,omitempty"`
 	Tree []*State      `json:"tree,omitempty"`
 	Override bool      `json:"override,omitempty"`
 }
@@ -32,6 +36,7 @@ type FlatState struct {
 	Level int          `json:"level"`
 	Source string      `json:"source,omitempty"`
 	Message string     `json:"message,omitempty"`
+	Datetime string    `json:"datetime,omitempty"`
 	Override bool      `json:"override,omitempty"`
 }
 
@@ -89,6 +94,7 @@ func (s *State) Apply(override *State) {
 		s.Override = true
 		s.Level = override.Level
 		s.Message = override.Message
+		s.Datetime = override.Datetime
 	}
 	
 	if override.Tree != nil && s.Tree != nil {
@@ -121,6 +127,7 @@ func (s *State) Apply(override *State) {
 func (s *State) Set(level int, message string) *State {
 	s.Level = level
 	s.Message = message
+	s.Datetime = time.Now().Format(time.RFC3339)
 	
 	return s
 }
@@ -203,6 +210,7 @@ func (s *State) AggregateLevels() *State {
 		}
 	}
 	
+	s.Datetime = time.Now().Format(time.RFC3339)
 	s.Level = maxLevel
 	
 	return s
@@ -228,9 +236,12 @@ func (s *State) String() string {
 		
 		sb.WriteString(fmt.Sprintf("%d %s", item.Level, LevelString(item.Level)))
 		
+		if item.Datetime != "" {
+			sb.WriteString(fmt.Sprintf(": <%s>", item.Datetime))
+		}
+		
 		if item.Message != "" {
-			sb.WriteString(": ")
-			sb.WriteString(item.Message)
+			sb.WriteString(fmt.Sprintf(": %s", item.Message))
 		}
 		
 		sb.WriteString("\n")
@@ -248,6 +259,7 @@ func rflat(rs *State, depth int) []*FlatState {
 		Level: rs.Level,
 		Source: rs.Source,
 		Message: rs.Message,
+		Datetime: rs.Datetime,
 	})
 	
 	if rs.Tree != nil {
