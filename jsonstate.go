@@ -124,6 +124,34 @@ func (s *State) Set(level int, message string) *State {
 	
 	return s
 }
+// add/remove Tree states based on the given array (first argument is typically 0, but may be set higher, to ignore first N items in the Tree as non-dynamic states)
+func (s *State) EnsureTree(offset int, array []any, get_source func(any) string) *State {
+	
+	sOffsetTree := s.Tree[offset:]
+	
+	// create a new tree array, but ensure matching with given array
+	newTree := s.Tree[:offset]
+	for _, a := range array {
+		
+		a_source := get_source(a)
+		
+		// get current instance, if possible, based on first matching source in the remaining Tree that we fix
+		var s *State
+		for _, s_it := range sOffsetTree {
+			if s_it.Source == a_source {
+				s = s_it
+				break
+			}
+		}
+		if s == nil {
+			s = New(a_source)
+		}
+		
+		newTree = append(newTree, s)
+	}
+	s.Tree = newTree
+	return s
+}
 // add new state to tree
 func (s *State) Add(s_list ...*State) *State {
 	
