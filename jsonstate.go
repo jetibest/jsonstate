@@ -199,6 +199,7 @@ func (s *State) AggregateLevels() *State {
 		return s
 	}
 	
+	maxLevelDatetime := time.Now().Format(time.RFC3339)
 	maxLevel := 0
 	for _, s_it := range s.Tree {
 		
@@ -207,10 +208,11 @@ func (s *State) AggregateLevels() *State {
 		
 		if s_it.Level > maxLevel {
 			maxLevel = s_it.Level
+			maxLevelDatetime = s_it.Datetime
 		}
 	}
 	
-	s.Datetime = time.Now().Format(time.RFC3339)
+	s.Datetime = maxLevelDatetime
 	s.Level = maxLevel
 	
 	return s
